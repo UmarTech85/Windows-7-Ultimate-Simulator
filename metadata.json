@@ -1,0 +1,6 @@
+{
+  "name": "Windows 7 Ultimate Edition Simulator",
+  "description": "High-performance interactive Windows 7 Ultimate Edition desktop simulator featuring authentic Aero Glass aesthetics, modular window manager, taskbar, start menu, and productivity apps.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

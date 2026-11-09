@@ -1,0 +1,201 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --aero-blue: rgba(18, 64, 102, 0.65);
+    --aero-border: rgba(220, 245, 255, 0.85);
+    --aero-highlight: rgba(255, 255, 255, 0.45);
+    --aero-shadow: 0 16px 40px rgba(0, 15, 35, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.4);
+    --font-segoe: "Segoe UI", -apple-system, BlinkMacSystemFont, Tahoma, sans-serif;
+  }
+
+  body {
+    font-family: var(--font-segoe);
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #0c2b4c;
+  }
+}
+
+/* Authentic Windows 7 Aero Glass reflection & lighting */
+.aero-glass {
+  background: linear-gradient(
+    180deg,
+    rgba(235, 248, 255, 0.68) 0%,
+    rgba(140, 195, 230, 0.45) 45%,
+    rgba(180, 222, 245, 0.55) 75%,
+    rgba(130, 185, 225, 0.62) 100%
+  );
+  backdrop-filter: blur(16px) saturate(1.35);
+  -webkit-backdrop-filter: blur(16px) saturate(1.35);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 14px 38px rgba(0, 18, 42, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.aero-glass-active {
+  box-shadow: 
+    0 18px 45px rgba(0, 15, 36, 0.58),
+    0 0 0 1px rgba(225, 248, 255, 0.95),
+    0 0 24px rgba(115, 210, 255, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.aero-titlebar {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(215, 240, 255, 0.6) 42%,
+    rgba(135, 195, 232, 0.65) 48%,
+    rgba(180, 225, 248, 0.72) 100%
+  );
+}
+
+.aero-titlebar-inactive {
+  background: linear-gradient(
+    180deg,
+    rgba(240, 246, 250, 0.65) 0%,
+    rgba(205, 220, 230, 0.45) 45%,
+    rgba(175, 195, 210, 0.5) 100%
+  );
+}
+
+/* Windows 7 Taskbar Glass */
+.aero-taskbar {
+  background: linear-gradient(
+    180deg,
+    rgba(195, 232, 252, 0.5) 0%,
+    rgba(65, 130, 180, 0.72) 20%,
+    rgba(18, 55, 92, 0.88) 60%,
+    rgba(6, 26, 52, 0.96) 100%
+  );
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border-top: 1px solid rgba(240, 250, 255, 0.75);
+  box-shadow: 0 -2px 14px rgba(0, 15, 35, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+/* Windows 7 Start Orb */
+.start-orb {
+  background: radial-gradient(circle at 35% 25%, #ffffff 0%, #a4e4ff 22%, #29a0e6 48%, #085da5 72%, #022a5c 100%);
+  box-shadow: 
+    0 0 0 1.5px rgba(225, 245, 255, 0.8),
+    0 0 14px rgba(90, 205, 255, 0.8),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+  transition: all 0.18s ease-out;
+}
+
+.start-orb:hover {
+  filter: brightness(1.18);
+  box-shadow: 
+    0 0 0 2px rgba(240, 252, 255, 1),
+    0 0 22px rgba(135, 225, 255, 1),
+    inset 0 1px 3px rgba(255, 255, 255, 1);
+  transform: scale(1.04);
+}
+
+.start-orb:active {
+  transform: scale(0.97);
+  filter: brightness(0.95);
+}
+
+/* Windows 7 Buttons */
+.win7-btn {
+  background: linear-gradient(180deg, #ffffff 0%, #eef4f9 48%, #d9e6f2 52%, #e5eff8 100%);
+  border: 1px solid #7d9cb5;
+  box-shadow: inset 0 1px 0 #ffffff, 0 1px 2px rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+  color: #17324d;
+  font-size: 12px;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.win7-btn:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #e2f2fc 48%, #c5e3f7 52%, #daf0fd 100%);
+  border-color: #5596c8;
+  box-shadow: inset 0 1px 0 #ffffff, 0 0 6px rgba(110, 195, 255, 0.5);
+}
+
+.win7-btn:active {
+  background: linear-gradient(180deg, #c7e1f4 0%, #aed5f0 48%, #93c6ea 52%, #b5dbf3 100%);
+  border-color: #3b7cae;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Windows 7 Title Bar Control Buttons */
+.win-ctrl-btn {
+  width: 29px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(130, 175, 205, 0.7);
+  border-top: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(195, 225, 245, 0.8) 50%, rgba(160, 205, 235, 0.85) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 1px 2px rgba(0, 0, 0, 0.1);
+  color: #1a354c;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.win-ctrl-btn:hover {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(220, 240, 255, 0.9) 50%, rgba(185, 225, 250, 0.95) 100%);
+  box-shadow: 0 0 8px rgba(130, 210, 255, 0.6);
+}
+
+.win-ctrl-close {
+  background: linear-gradient(180deg, #ffc0b3 0%, #e85542 45%, #d12e1a 52%, #e54632 100%) !important;
+  border-color: #9c2718 !important;
+  border-radius: 0 0 4px 4px;
+  color: #ffffff !important;
+}
+
+.win-ctrl-close:hover {
+  background: linear-gradient(180deg, #ffd3c9 0%, #fa6957 45%, #e63925 52%, #ff5c47 100%) !important;
+  box-shadow: 0 0 10px rgba(255, 75, 55, 0.75) !important;
+}
+
+/* Desktop Marquee Selection Box */
+.desktop-selection-box {
+  position: absolute;
+  border: 1px solid rgba(49, 133, 206, 0.85);
+  background: rgba(85, 175, 245, 0.25);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Windows 7 Aero Snap Preview Rectangle */
+.aero-snap-preview {
+  position: absolute;
+  border: 2px solid rgba(220, 245, 255, 0.95);
+  background: rgba(140, 215, 255, 0.28);
+  backdrop-filter: blur(8px);
+  border-radius: 8px;
+  box-shadow: 0 0 28px rgba(90, 195, 255, 0.6), inset 0 0 18px rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+  z-index: 99998;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Scrollbar Windows 7 style */
+::-webkit-scrollbar {
+  width: 13px;
+  height: 13px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f4f7;
+  border-left: 1px solid #d4dfe7;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #e4eff8, #c9dbe9);
+  border: 1px solid #99b6ce;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #d3e7f6, #b1cfe6);
+  border-color: #6d9bc0;
+}
