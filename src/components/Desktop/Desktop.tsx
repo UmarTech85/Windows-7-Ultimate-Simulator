@@ -1,16 +1,24 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { AppId, DesktopShortcut, ThemeConfig } from '../../types';
 import { sound } from '../../utils/audio';
-import { 
-  RefreshCw, 
-  Plus, 
-  Palette, 
-  Monitor, 
-  Trash2, 
-  FileText, 
-  FolderPlus,
+import type { LucideIcon } from 'lucide-react';
+import {
+  Bomb,
+  Calculator,
   Cpu,
-  Clock as ClockIcon
+  FilePlus2,
+  FileText,
+  Folder,
+  FolderPlus,
+  Globe,
+  Monitor,
+  Paintbrush,
+  Palette,
+  Play,
+  RefreshCw,
+  Settings,
+  SquareTerminal,
+  Trash2,
 } from 'lucide-react';
 
 interface DesktopProps {
@@ -27,6 +35,35 @@ interface ContextMenuState {
   x: number;
   y: number;
 }
+
+const SHORTCUT_VISUALS: Partial<Record<AppId, { icon: LucideIcon; background: string; foreground: string }>> = {
+  computer: { icon: Monitor, background: 'from-sky-100 via-cyan-100 to-blue-400', foreground: 'text-sky-800' },
+  recycle: { icon: Trash2, background: 'from-slate-50 via-cyan-100 to-slate-300', foreground: 'text-slate-600' },
+  browser: { icon: Globe, background: 'from-sky-100 via-blue-100 to-blue-500', foreground: 'text-blue-700' },
+  notepad: { icon: FileText, background: 'from-white via-sky-50 to-blue-300', foreground: 'text-blue-700' },
+  paint: { icon: Paintbrush, background: 'from-rose-100 via-amber-100 to-violet-300', foreground: 'text-rose-700' },
+  media: { icon: Play, background: 'from-slate-50 via-sky-100 to-blue-500', foreground: 'text-blue-700' },
+  calc: { icon: Calculator, background: 'from-emerald-50 via-teal-100 to-teal-400', foreground: 'text-teal-800' },
+  minesweeper: { icon: Bomb, background: 'from-amber-50 via-orange-100 to-orange-400', foreground: 'text-orange-800' },
+  cmd: { icon: SquareTerminal, background: 'from-slate-100 via-slate-200 to-slate-500', foreground: 'text-slate-800' },
+  control: { icon: Settings, background: 'from-slate-50 via-blue-100 to-slate-400', foreground: 'text-slate-700' },
+};
+
+const ShortcutGlyph: React.FC<{ shortcut: DesktopShortcut }> = ({ shortcut }) => {
+  const visual = shortcut.icon === '📁'
+    ? { icon: Folder, background: 'from-amber-50 via-amber-100 to-amber-400', foreground: 'text-amber-700' }
+    : shortcut.icon === '📄'
+      ? { icon: FilePlus2, background: 'from-white via-sky-50 to-blue-300', foreground: 'text-blue-700' }
+      : SHORTCUT_VISUALS[shortcut.appId] ?? { icon: FileText, background: 'from-white via-sky-50 to-blue-300', foreground: 'text-blue-700' };
+  const Icon = visual.icon;
+
+  return (
+    <span aria-hidden="true" className={`relative mb-1 flex size-10 items-center justify-center overflow-hidden rounded-[0.8rem] border border-white/80 bg-gradient-to-br shadow-[0_3px_8px_rgba(0,15,35,0.38),inset_0_1px_0_rgba(255,255,255,0.95)] ${visual.background}`}>
+      <span className="absolute inset-x-0 top-0 h-1/2 rounded-t-[0.8rem] bg-gradient-to-b from-white/75 to-transparent" />
+      <Icon className={`relative size-[1.35rem] drop-shadow-sm ${visual.foreground}`} strokeWidth={1.8} />
+    </span>
+  );
+};
 
 export const Desktop: React.FC<DesktopProps> = ({
   shortcuts,
@@ -53,7 +90,7 @@ export const Desktop: React.FC<DesktopProps> = ({
 
   // Wallpaper backgrounds mapping
   const wallpaperStyles: Record<string, string> = {
-    harmony: 'radial-gradient(ellipse at 50% 80%, rgba(195, 238, 255, 0.92) 0%, rgba(85, 170, 220, 0.8) 25%, transparent 60%), linear-gradient(135deg, #051d3e 0%, #0c5694 48%, #031835 100%)',
+    harmony: 'linear-gradient(180deg, rgba(3, 19, 43, 0.12), rgba(3, 19, 43, 0.28)), url("/windows7-harmony-wallpaper.png")',
     aurora: 'radial-gradient(ellipse at 60% 40%, rgba(85, 255, 225, 0.6) 0%, rgba(12, 110, 160, 0.7) 40%, transparent 70%), linear-gradient(135deg, #021226 0%, #06375a 50%, #010c1c 100%)',
     architecture: 'linear-gradient(135deg, #1b354d 0%, #3e6d94 50%, #87b8dc 100%)',
     nature: 'linear-gradient(180deg, #5398d9 0%, #a2d2f7 50%, #3d8a43 51%, #2b6830 100%)',
@@ -119,7 +156,11 @@ export const Desktop: React.FC<DesktopProps> = ({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onContextMenu={handleContextMenu}
-      style={{ background: wallpaperStyles[theme.wallpaper] || wallpaperStyles.harmony }}
+      style={{
+        background: wallpaperStyles[theme.wallpaper] || wallpaperStyles.harmony,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
       className="absolute inset-0 bottom-11 overflow-hidden select-none"
     >
       {/* Windows 7 Aero Ambient Glow & Sheen */}
@@ -131,68 +172,76 @@ export const Desktop: React.FC<DesktopProps> = ({
         {shortcuts.map((sc) => {
           const isSelected = selectedIds.includes(sc.id);
           return (
-            <div
+            <button
+              type="button"
               key={sc.id}
               onClick={(e) => handleIconClick(e, sc.id)}
               onDoubleClick={(e) => handleIconDoubleClick(e, sc.appId)}
-              className={`w-[76px] min-h-[72px] p-1 rounded flex flex-col items-center text-center cursor-default transition-all border ${
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onOpenApp(sc.appId);
+                }
+              }}
+              aria-label={`${sc.name} desktop shortcut`}
+              aria-pressed={isSelected}
+              className={`group flex min-h-[86px] w-[90px] flex-col items-center justify-center rounded-xl border bg-transparent px-1 py-1.5 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 ${
                 isSelected
-                  ? 'bg-blue-400/25 border-white/60 shadow-[inset_0_0_12px_rgba(255,255,255,0.2)]'
-                  : 'border-transparent hover:bg-sky-400/20 hover:border-white/40'
+                  ? 'border-white/75 bg-sky-300/25 shadow-[inset_0_0_14px_rgba(255,255,255,0.24),0_4px_12px_rgba(0,20,50,0.15)]'
+                  : 'border-transparent hover:border-white/40 hover:bg-sky-300/15 hover:shadow-[0_4px_12px_rgba(0,20,50,0.18)]'
               }`}
             >
-              <span className="text-3xl mb-1 filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
-                {sc.icon}
-              </span>
-              <span className="text-[11px] text-white font-normal leading-tight drop-shadow-[0_1px_3px_#000] break-words line-clamp-2 px-1">
+              <ShortcutGlyph shortcut={sc} />
+              <span className="max-w-full break-words px-0.5 text-[11px] font-medium leading-tight text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.95)] line-clamp-2">
                 {sc.name}
               </span>
-            </div>
+            </button>
           );
         })}
       </div>
 
       {/* Windows 7 Desktop Gadgets (Clock & CPU Meter) */}
-      <div className="absolute top-6 right-6 flex flex-col gap-5 pointer-events-auto z-10 hidden md:flex">
-        {/* Analog / Digital Clock Gadget */}
-        <div className="w-36 bg-gradient-to-b from-white/30 via-slate-800/40 to-slate-900/60 p-3 rounded-full border border-white/40 shadow-2xl backdrop-blur-md flex flex-col items-center justify-center text-white text-center">
-          <div className="w-24 h-24 rounded-full border-2 border-white/80 bg-gradient-to-br from-white/20 to-black/40 shadow-inner flex flex-col items-center justify-center relative">
-            <span className="text-xs font-mono font-bold tracking-wider text-cyan-200">
-              {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-            </span>
-            <span className="text-[9px] text-slate-300 uppercase tracking-widest mt-0.5">
+      <div className="pointer-events-auto absolute right-3 top-4 z-10 flex w-[132px] flex-col gap-3 text-white sm:right-6 sm:top-6 sm:w-36">
+        <section aria-label="Desktop clock" className="aero-gadget rounded-2xl p-3 text-center">
+          <div className="mx-auto flex size-[76px] flex-col items-center justify-center rounded-full border border-white/60 bg-[radial-gradient(circle_at_35%_25%,rgba(255,255,255,0.38),rgba(10,35,65,0.72))] shadow-[inset_0_1px_5px_rgba(255,255,255,0.3),0_3px_10px_rgba(0,0,0,0.2)] sm:size-[84px]">
+            <time className="font-mono text-[15px] font-semibold tracking-tight text-white [text-shadow:0_1px_5px_rgba(0,0,0,0.45)] sm:text-base">
+              {currentTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+            </time>
+            <span className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.18em] text-cyan-100/90">
               {currentTime.toLocaleDateString([], { weekday: 'short' })}
             </span>
           </div>
-        </div>
+          <p className="mt-2 text-[10px] font-medium tracking-wide text-white/90">
+            {currentTime.toLocaleDateString([], { month: 'short', day: 'numeric' })}
+          </p>
+        </section>
 
-        {/* CPU & Memory Meter Gadget */}
-        <div className="w-36 bg-gradient-to-b from-white/25 to-slate-900/70 p-3 rounded-xl border border-white/35 shadow-2xl backdrop-blur-md text-white text-xs">
-          <div className="flex items-center gap-1.5 font-semibold text-[11px] text-cyan-200 mb-2 border-b border-white/20 pb-1">
-            <Cpu className="w-3.5 h-3.5" />
+        <section aria-label="System resource monitor" className="aero-gadget rounded-xl p-2.5 sm:p-3">
+          <div className="mb-2 flex items-center gap-1.5 border-b border-white/20 pb-1.5 text-[10px] font-semibold text-cyan-100 sm:text-[11px]">
+            <Cpu aria-hidden="true" className="size-3.5" />
             <span>Resource Monitor</span>
           </div>
-          <div className="space-y-2 text-[10px]">
+          <div className="space-y-2.5 text-[9px] sm:text-[10px]">
             <div>
-              <div className="flex justify-between mb-0.5 text-slate-200">
-                <span>CPU Usage</span>
+              <div className="mb-1 flex justify-between gap-1 text-white/90">
+                <span>CPU usage</span>
                 <span className="font-mono">18%</span>
               </div>
-              <div className="w-full bg-black/40 h-1.5 rounded-full overflow-hidden border border-white/20">
-                <div className="bg-gradient-to-r from-emerald-400 to-cyan-400 h-full w-[18%]" />
+              <div role="progressbar" aria-label="CPU usage" aria-valuemin={0} aria-valuemax={100} aria-valuenow={18} className="h-1.5 overflow-hidden rounded-full border border-white/20 bg-black/35">
+                <div className="h-full w-[18%] rounded-full bg-gradient-to-r from-emerald-300 to-cyan-300" />
               </div>
             </div>
             <div>
-              <div className="flex justify-between mb-0.5 text-slate-200">
-                <span>RAM (Aero 60 FPS)</span>
+              <div className="mb-1 flex justify-between gap-1 text-white/90">
+                <span>Memory</span>
                 <span className="font-mono">2.4 GB</span>
               </div>
-              <div className="w-full bg-black/40 h-1.5 rounded-full overflow-hidden border border-white/20">
-                <div className="bg-gradient-to-r from-cyan-400 to-blue-500 h-full w-[32%]" />
+              <div role="progressbar" aria-label="Memory usage" aria-valuemin={0} aria-valuemax={100} aria-valuenow={32} className="h-1.5 overflow-hidden rounded-full border border-white/20 bg-black/35">
+                <div className="h-full w-[32%] rounded-full bg-gradient-to-r from-cyan-300 to-blue-400" />
               </div>
             </div>
           </div>
-        </div>
+        </section>
       </div>
 
       {/* Marquee Drag Selection Box */}
