@@ -68,6 +68,8 @@ export const Taskbar: React.FC<TaskbarProps> = ({
             isStartMenuOpen ? 'ring-2 ring-cyan-300 scale-105 brightness-125' : ''
           }`}
           title="Start"
+          aria-label="Start menu"
+          aria-expanded={isStartMenuOpen}
         >
           {/* Windows 7 Quad-Color Flag Logo */}
           <div className="grid grid-cols-2 gap-0.5 w-4 h-4 transform rotate-12 drop-shadow-md">
@@ -96,7 +98,9 @@ export const Taskbar: React.FC<TaskbarProps> = ({
                     sound.playClick();
                     onWindowClick(win.id);
                   }}
-                  className={`h-9 min-w-12 max-w-44 px-2.5 rounded-sm flex items-center gap-2 border text-xs cursor-pointer transition-all ${
+                  aria-label={`${win.title}${win.isMinimized ? ', minimized' : ''}`}
+                  aria-pressed={isActive}
+                  className={`h-9 min-w-12 max-w-44 px-2.5 rounded-sm flex items-center gap-2 border text-xs cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 ${
                     isActive
                       ? 'bg-gradient-to-b from-white/40 via-cyan-400/25 to-blue-600/35 border-cyan-200/90 shadow-[0_0_10px_rgba(120,215,255,0.6),inset_0_1px_0_rgba(255,255,255,0.8)] text-white'
                       : win.isMinimized
@@ -204,17 +208,20 @@ export const Taskbar: React.FC<TaskbarProps> = ({
 
         {/* Date / Time Tray Display */}
         <div className="relative">
-          <div
+          <button
+            type="button"
             onClick={() => {
               sound.playClick();
               setShowCalendarFlyout(!showCalendarFlyout);
             }}
-            className="flex flex-col items-center justify-center px-2 py-0.5 hover:bg-white/15 rounded cursor-pointer leading-tight"
+            className="flex flex-col items-center justify-center px-2 py-0.5 hover:bg-white/15 rounded cursor-pointer leading-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
             title="Change date and time settings"
+            aria-label={`Date and time: ${time}, ${date}`}
+            aria-expanded={showCalendarFlyout}
           >
             <span className="text-[11px] font-medium tracking-tight drop-shadow-xs">{time}</span>
             <span className="text-[10px] text-cyan-100 drop-shadow-xs">{date}</span>
-          </div>
+          </button>
 
           {/* Calendar Flyout */}
           {showCalendarFlyout && (

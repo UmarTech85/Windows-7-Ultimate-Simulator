@@ -64,6 +64,15 @@
   );
 }
 
+/* Compact Aero glass surfaces for desktop gadgets */
+.aero-gadget {
+  background: linear-gradient(155deg, rgba(233, 248, 255, 0.3), rgba(8, 30, 55, 0.66));
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid rgba(235, 249, 255, 0.45);
+  box-shadow: 0 10px 24px rgba(0, 16, 38, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+
 /* Windows 7 Taskbar Glass */
 .aero-taskbar {
   background: linear-gradient(
