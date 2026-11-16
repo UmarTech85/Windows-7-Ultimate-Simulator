@@ -114,7 +114,9 @@ export default function App() {
 
     // Stagger window positions
     const offsetIndex = windows.length % 6;
-    const defaultX = Math.max(20, 80 + offsetIndex * 32);
+    const defaultX = appId === 'media' && screenWidth <= 720
+      ? Math.max(8, (screenWidth - width) / 2)
+      : Math.max(20, 80 + offsetIndex * 32);
     const defaultY = Math.max(20, 45 + offsetIndex * 28);
 
     setHighestZ(prev => {
