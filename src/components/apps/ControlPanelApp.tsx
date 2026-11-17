@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   ShieldCheck, 
   Wifi, 
@@ -18,7 +18,26 @@ interface ControlPanelAppProps {
   onOpenApp?: (appId: AppId) => void;
 }
 
+type NetworkPermissions = Record<string, { private: boolean; public: boolean }>;
+
+const defaultNetworkPermissions: NetworkPermissions = {
+  'Internet Explorer': { private: true, public: true },
+  'Windows Media Player': { private: true, public: false },
+  'Windows Update': { private: true, public: true },
+  'Windows Help and Support': { private: true, public: false },
+};
+
 export const ControlPanelApp: React.FC<ControlPanelAppProps> = ({ onOpenApp }) => {
+  const [firewallOpen, setFirewallOpen] = useState(false);
+  const [networkPermissions, setNetworkPermissions] = useState(defaultNetworkPermissions);
+
+  const toggleNetworkPermission = (appName: string, network: 'private' | 'public') => {
+    setNetworkPermissions((current) => ({
+      ...current,
+      [appName]: { ...current[appName], [network]: !current[appName][network] },
+    }));
+  };
+
   return (
     <div className="flex flex-col h-full bg-[#fbfdff] select-none text-[#1a2d42]">
       {/* Top Address / Search */}
@@ -26,7 +45,7 @@ export const ControlPanelApp: React.FC<ControlPanelAppProps> = ({ onOpenApp }) =
         <div className="flex items-center gap-2">
           <span className="font-semibold text-[#16416b]">Control Panel</span>
           <span className="text-slate-400">▸</span>
-          <span className="text-slate-600">All Control Panel Items</span>
+          <span className="text-slate-600">{firewallOpen ? 'System and Security ▸ Windows Firewall' : 'All Control Panel Items'}</span>
         </div>
         <div className="w-48 flex items-center h-6 border border-[#9bb7cf] bg-white rounded-xs px-2 shadow-inner">
           <input 
@@ -39,7 +58,57 @@ export const ControlPanelApp: React.FC<ControlPanelAppProps> = ({ onOpenApp }) =
       </div>
 
       {/* Main Category Grid */}
-      <div className="flex-1 overflow-auto p-6 space-y-6">
+      <div className="flex-1 overflow-auto p-3 sm:p-6 space-y-6">
+        {firewallOpen ? (
+          <section aria-labelledby="firewall-heading" className="mx-auto max-w-4xl space-y-5">
+            <button
+              type="button"
+              onClick={() => setFirewallOpen(false)}
+              className="text-xs text-[#185384] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2878b8]"
+            >
+              ‹ Back to Control Panel
+            </button>
+            <div className="border-b border-slate-200 pb-3">
+              <h1 id="firewall-heading" className="text-base font-normal text-[#174873] sm:text-lg">Allow apps through Windows Firewall</h1>
+              <p className="mt-1 text-xs text-slate-600">Choose which apps can communicate over private or public networks.</p>
+            </div>
+            <div className="border border-[#c5d6e4] bg-white shadow-sm">
+              <div className="grid grid-cols-2 items-center border-b border-[#c5d6e4] bg-[#edf4fa] px-2 py-2 text-[11px] font-semibold text-[#174873] sm:grid-cols-[minmax(180px,1fr)_100px_100px] sm:px-4 sm:text-xs">
+                <span className="col-span-2 pb-2 sm:col-span-1 sm:pb-0">Allowed apps and features</span>
+                <span className="text-center">Private</span>
+                <span className="text-center">Public</span>
+              </div>
+              {Object.entries(networkPermissions).map(([appName, permissions]) => (
+                <div key={appName} className="grid grid-cols-2 items-center gap-y-2 border-b border-slate-100 px-2 py-3 text-xs last:border-b-0 sm:grid-cols-[minmax(180px,1fr)_100px_100px] sm:px-4">
+                  <span className="col-span-2 font-medium text-slate-700 sm:col-span-1">{appName}</span>
+                  {(['private', 'public'] as const).map((network) => (
+                    <label key={network} className="flex cursor-pointer items-center justify-center gap-2 text-slate-600">
+                      <input
+                        type="checkbox"
+                        checked={permissions[network]}
+                        onChange={() => toggleNetworkPermission(appName, network)}
+                        aria-label={`${appName} internet access on ${network} networks`}
+                        className="h-4 w-4 accent-[#1685c5]"
+                      />
+                      <span className="text-[10px] capitalize text-slate-500 sm:sr-only">{network}</span>
+                    </label>
+                  ))}
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="max-w-xl text-[11px] leading-relaxed text-slate-500">These permissions are simulated settings for this Windows 7 desktop experience; they do not change your device&apos;s real firewall.</p>
+              <button
+                type="button"
+                onClick={() => setNetworkPermissions(defaultNetworkPermissions)}
+                className="rounded-sm border border-[#9bb7cf] bg-gradient-to-b from-white to-[#e8f1f8] px-3 py-1.5 text-xs text-[#174873] shadow-sm hover:from-[#f8fcff] hover:to-[#dceaf5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2878b8]"
+              >
+                Restore defaults
+              </button>
+            </div>
+          </section>
+        ) : (
+          <>
         <div className="flex items-center justify-between border-b border-slate-200 pb-2">
           <div>
             <h1 className="text-lg font-normal text-[#174873]">Adjust your computer's settings</h1>
@@ -59,6 +128,15 @@ export const ControlPanelApp: React.FC<ControlPanelAppProps> = ({ onOpenApp }) =
                 <li className="hover:underline cursor-pointer text-[#185384]">Review your computer's status</li>
                 <li className="hover:underline cursor-pointer text-[#185384]">Back up your computer</li>
                 <li className="hover:underline cursor-pointer text-[#185384]">Find and fix problems</li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => { sound.playClick(); setFirewallOpen(true); }}
+                    className="text-left text-[#185384] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2878b8]"
+                  >
+                    Allow an app through Windows Firewall
+                  </button>
+                </li>
               </ul>
             </div>
           </div>
@@ -176,6 +254,8 @@ export const ControlPanelApp: React.FC<ControlPanelAppProps> = ({ onOpenApp }) =
             </div>
           </div>
         </div>
+          </>
+        )}
       </div>
     </div>
   );
