@@ -190,7 +190,7 @@ export const AeroWindow: React.FC<AeroWindowProps> = memo(({
     resizeStartRef.current = null;
   };
 
-  if (win.isMinimized) return null;
+  // Keep window content mounted while hidden so media playback continues when minimized.
 
   // Aero Tint Styling
   const tintColorMap: Record<string, string> = {
@@ -207,7 +207,9 @@ export const AeroWindow: React.FC<AeroWindowProps> = memo(({
     <div
       ref={windowRef}
       onPointerDown={onFocus}
+      aria-hidden={win.isMinimized}
       style={{
+        display: win.isMinimized ? 'none' : undefined,
         transform: `translate3d(${win.x}px, ${win.y}px, 0)`,
         width: `${win.width}px`,
         height: `${win.height}px`,
