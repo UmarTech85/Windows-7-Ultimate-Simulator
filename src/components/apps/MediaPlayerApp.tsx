@@ -39,10 +39,48 @@ export const MediaPlayerApp: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const playerRootRef = useRef<HTMLDivElement>(null);
   const objectUrlsRef = useRef<string[]>([]);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
   const activeTrack = tracks[activeIndex] ?? null;
 
+  const ensureAudioAnalyser = () => {
+    const audio = audioRef.current;
+    if (!audio) return null;
+
+    let audioContext = audioContextRef.current;
+    let analyser = analyserRef.current;
+
+    if (!audioContext || !analyser) {
+      try {
+        audioContext = new AudioContext();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.82;
+        const source = audioContext.createMediaElementSource(audio);
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+        audioContextRef.current = audioContext;
+        analyserRef.current = analyser;
+      } catch {
+        void audioContext?.close();
+        audioContextRef.current = null;
+        analyserRef.current = null;
+        return null;
+      }
+    }
+
+    if (audioContext.state === 'suspended') {
+      void audioContext.resume().catch(() => undefined);
+    }
+
+    return analyser;
+  };
+
   useEffect(() => {
-    return () => objectUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    return () => {
+      objectUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      void audioContextRef.current?.close();
+    };
   }, []);
 
   useEffect(() => {
@@ -69,6 +107,7 @@ export const MediaPlayerApp: React.FC = () => {
     if (!audio) return;
 
     if (isPlaying && activeTrack) {
+      ensureAudioAnalyser();
       audio.play().catch(() => {
         setIsPlaying(false);
         setPlaybackError('This audio file could not be played in your browser.');
@@ -83,19 +122,39 @@ export const MediaPlayerApp: React.FC = () => {
     const context = canvas?.getContext('2d');
     if (!canvas || !context) return;
 
+    const analyser = analyserRef.current;
+    const frequencyData = analyser ? new Uint8Array(analyser.frequencyBinCount) : null;
+    const smoothedLevels = new Float32Array(42);
     let phase = 0;
     let animationFrame = 0;
 
     const draw = () => {
       const { width, height } = canvas;
       context.clearRect(0, 0, width, height);
-      const count = 42;
+      const count = smoothedLevels.length;
       const gap = 3;
       const barWidth = (width - gap * (count + 1)) / count;
 
+      if (analyser && frequencyData && isPlaying) {
+        analyser.getByteFrequencyData(frequencyData);
+      }
+
       for (let index = 0; index < count; index += 1) {
-        const wave = Math.abs(Math.sin(index * 0.31 + phase) * Math.cos(index * 0.17 - phase * 1.4));
-        const barHeight = isPlaying ? 7 + wave * (height - 16) : 4 + (index % 3) * 2;
+        const position = (index + 0.5) / count;
+        const frequencyIndex = Math.min(
+          (frequencyData?.length ?? 1) - 1,
+          Math.floor(Math.pow(position, 1.8) * (frequencyData?.length ?? 1)),
+        );
+        const liveLevel = frequencyData && isPlaying
+          ? frequencyData[frequencyIndex] / 255
+          : isPlaying && !analyser
+            ? Math.abs(Math.sin(index * 0.31 + phase) * Math.cos(index * 0.17 - phase * 1.4)) * 0.35
+            : 0;
+        smoothedLevels[index] = liveLevel > smoothedLevels[index]
+          ? smoothedLevels[index] + (liveLevel - smoothedLevels[index]) * 0.72
+          : smoothedLevels[index] * 0.82;
+
+        const barHeight = 3 + Math.pow(smoothedLevels[index], 0.8) * (height - 8);
         const x = gap + index * (barWidth + gap);
         const y = height - barHeight;
         const gradient = context.createLinearGradient(0, y, 0, height);
@@ -114,12 +173,13 @@ export const MediaPlayerApp: React.FC = () => {
 
     draw();
     return () => window.cancelAnimationFrame(animationFrame);
-  }, [isPlaying]);
+  }, [activeTrack?.url, isPlaying]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.currentTarget.files ?? []);
     if (files.length === 0) return;
 
+    ensureAudioAnalyser();
     const newTracks = files.map((file, index) => {
       const url = URL.createObjectURL(file);
       objectUrlsRef.current.push(url);
@@ -140,6 +200,7 @@ export const MediaPlayerApp: React.FC = () => {
       fileInputRef.current?.click();
       return;
     }
+    ensureAudioAnalyser();
     setPlaybackError('');
     setIsPlaying((playing) => !playing);
   };
