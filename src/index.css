@@ -20,6 +20,27 @@
     height: 100vh;
     background-color: #0c2b4c;
   }
+
+  :where(input, textarea, [contenteditable="true"], [role="textbox"]) {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  :focus-visible {
+    outline: 2px solid #167ac6;
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
 /* Authentic Windows 7 Aero Glass reflection & lighting */
