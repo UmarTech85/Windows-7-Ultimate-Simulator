@@ -55,17 +55,17 @@ export const Taskbar: React.FC<TaskbarProps> = ({
   }, []);
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 h-11 aero-taskbar flex items-center justify-between px-1.5 z-[99990] select-none text-white">
+    <div className="absolute bottom-0 left-0 right-0 h-12 aero-taskbar flex items-center justify-between gap-1 px-1.5 sm:px-2.5 z-[99990] select-none text-white">
       {/* Left: Start Orb + Open Application Tabs */}
-      <div className="flex items-center gap-1.5 h-full flex-1 overflow-hidden pr-2">
+      <div className="flex items-center gap-2 h-full min-w-0 flex-1 overflow-hidden pr-1 sm:pr-2">
         {/* Windows 7 Start Orb */}
         <button
           onClick={() => {
             sound.playClick();
             onToggleStartMenu();
           }}
-          className={`relative w-11 h-11 -mt-1 rounded-full start-orb flex items-center justify-center shrink-0 cursor-pointer ${
-            isStartMenuOpen ? 'ring-2 ring-cyan-300 scale-105 brightness-125' : ''
+          className={`relative z-10 w-10 h-10 rounded-full start-orb flex items-center justify-center shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-100 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
+            isStartMenuOpen ? 'ring-2 ring-cyan-200 scale-105 brightness-125' : ''
           }`}
           title="Start"
           aria-label="Start menu"
@@ -81,7 +81,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
         </button>
 
         {/* Taskbar Application Items */}
-        <div className="flex items-center gap-1 h-full flex-1 overflow-x-auto py-1">
+        <div className="flex items-center gap-1.5 h-full min-w-0 flex-1 overflow-x-auto overscroll-x-contain py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {windows.map((win) => {
             const isActive = activeWindowId === win.id && !win.isMinimized;
             const isHovered = hoveredWindowId === win.id;
@@ -100,18 +100,24 @@ export const Taskbar: React.FC<TaskbarProps> = ({
                   }}
                   aria-label={`${win.title}${win.isMinimized ? ', minimized' : ''}`}
                   aria-pressed={isActive}
-                  className={`h-9 min-w-12 max-w-44 px-2.5 rounded-sm flex items-center gap-2 border text-xs cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 ${
+                  className={`relative h-10 min-w-12 max-w-48 px-2 sm:px-3 rounded-md flex items-center gap-2 border text-xs cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-100 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900 ${
                     isActive
-                      ? 'bg-gradient-to-b from-white/40 via-cyan-400/25 to-blue-600/35 border-cyan-200/90 shadow-[0_0_10px_rgba(120,215,255,0.6),inset_0_1px_0_rgba(255,255,255,0.8)] text-white'
+                      ? 'bg-gradient-to-b from-white/45 via-cyan-300/30 to-blue-700/45 border-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_0_12px_rgba(100,205,255,0.45)] text-white'
                       : win.isMinimized
-                        ? 'bg-white/10 hover:bg-white/20 border-white/20 text-slate-300'
-                        : 'bg-white/15 hover:bg-white/30 border-white/30 text-white'
+                        ? 'bg-slate-950/20 hover:bg-white/20 border-white/20 text-slate-200'
+                        : 'bg-white/15 hover:bg-white/25 border-white/35 text-white'
                   }`}
                 >
                   <span className="text-base shrink-0 filter drop-shadow-xs">{win.icon}</span>
                   <span className="truncate text-[11px] font-normal drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {win.title}
                   </span>
+                  <span
+                    aria-hidden="true"
+                    className={`absolute bottom-0.5 left-1/2 h-0.5 -translate-x-1/2 rounded-full transition-all duration-150 ${
+                      isActive ? 'w-4 bg-cyan-100 shadow-[0_0_6px_rgba(160,235,255,0.9)]' : 'w-1.5 bg-white/50'
+                    }`}
+                  />
                 </button>
 
                 {/* Aero Peek Window Thumbnail Preview Tooltip */}
@@ -149,16 +155,17 @@ export const Taskbar: React.FC<TaskbarProps> = ({
       </div>
 
       {/* Right: Notification System Tray */}
-      <div className="flex items-center gap-2 h-full text-xs">
+      <div className="flex items-center gap-0.5 sm:gap-1 h-full shrink-0 text-xs border-l border-white/20 pl-1 sm:pl-2">
         {/* Chevron tray toggle */}
-        <button className="text-white/60 hover:text-white p-1 cursor-pointer" title="Show hidden icons">
+        <button aria-label="Show hidden icons" className="flex h-8 w-8 items-center justify-center rounded-md text-white/70 hover:bg-white/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-100 cursor-pointer transition-colors" title="Show hidden icons">
           <ChevronUp className="w-3.5 h-3.5" />
         </button>
 
         {/* Action Center */}
         <button 
           onClick={() => sound.playClick()}
-          className="text-white/80 hover:text-white p-1 hover:bg-white/10 rounded cursor-pointer" 
+          aria-label="No issues detected in Action Center"
+          className="flex h-8 w-8 items-center justify-center rounded-md text-white/80 hover:bg-white/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-100 cursor-pointer transition-colors"
           title="No issues detected in Action Center"
         >
           <Flag className="w-3.5 h-3.5" />
@@ -167,7 +174,8 @@ export const Taskbar: React.FC<TaskbarProps> = ({
         {/* Network Icon */}
         <button 
           onClick={() => sound.playClick()}
-          className="text-white/80 hover:text-white p-1 hover:bg-white/10 rounded cursor-pointer" 
+          aria-label="Internet Access: Connected"
+          className="flex h-8 w-8 items-center justify-center rounded-md text-white/80 hover:bg-white/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-100 cursor-pointer transition-colors"
           title="Internet Access: Connected"
         >
           <Wifi className="w-3.5 h-3.5" />
@@ -180,7 +188,8 @@ export const Taskbar: React.FC<TaskbarProps> = ({
               sound.playClick();
               setShowVolumeFlyout(!showVolumeFlyout);
             }}
-            className="text-white/80 hover:text-white p-1 hover:bg-white/10 rounded cursor-pointer"
+            aria-label={soundEnabled ? 'Mute sounds' : 'Unmute sounds'}
+            className="flex h-8 w-8 items-center justify-center rounded-md text-white/80 hover:bg-white/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-100 cursor-pointer transition-colors"
             title="Speakers: 80%"
           >
             {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5 text-red-400" />}
@@ -264,7 +273,8 @@ export const Taskbar: React.FC<TaskbarProps> = ({
           }}
           onMouseEnter={() => onPeekDesktop(true)}
           onMouseLeave={() => onPeekDesktop(false)}
-          className="w-3.5 h-9 ml-1 rounded-xs border-l border-white/40 bg-white/10 hover:bg-white/30 active:bg-white/50 transition-colors cursor-pointer"
+          aria-label="Show Desktop"
+          className="w-2.5 sm:w-3.5 h-9 ml-0.5 sm:ml-1 rounded-r-sm border-l border-white/40 bg-white/10 hover:bg-white/30 active:bg-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-100 transition-colors cursor-pointer"
           title="Show Desktop"
         />
       </div>
